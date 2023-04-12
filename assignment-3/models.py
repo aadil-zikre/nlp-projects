@@ -37,8 +37,8 @@ class BiLSTM:
         history = self.model.fit(X_train, Y_train, epochs = EPOCHS, batch_size=BATCH_SIZE, verbose = 1, validation_data =(X_test, Y_test))
         return history
     
-    def save_model(self, save_dir):
-        model_dir = f"{save_dir}/{self.model_name}"
+    def save_model(self):
+        model_dir = f"{self.save_dir}/{self.model_name}"
         self.model.save(model_dir)
 
     def get_model(self):
