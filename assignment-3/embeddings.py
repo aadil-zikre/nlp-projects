@@ -56,7 +56,7 @@ class BaseProcessor:
     
     def get_training_XY(self, test_size = 0.25):
         self.model.to(self.device)
-        dataloader = self._create_dataloader(self)
+        dataloader = self._create_dataloader()
         self.model.eval()
         X = []
         Y = []
