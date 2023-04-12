@@ -32,8 +32,9 @@ class TF_Dataset(Dataset):
     
 
 class BaseProcessor:
-    def __init__(self, df, model_string, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs):
+    def __init__(self, df, col, model_string, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs):
         self.df = df
+        self.col = col
         self.MODEL_MAX_LENGTH = MODEL_MAX_LENGTH
         self.device = DEVICE
         self.model_string = model_string
@@ -46,17 +47,16 @@ class BaseProcessor:
         self.BATCH_SIZE = BATCH_SIZE
         self.random_state = random_state
     
-    def _create_dataloader(self, df):
-        df = self.df
+    def _create_dataloader(self):
         
-        dataset = self.tf_dataset(df, self.tokenizer)
+        dataset = self.tf_dataset(self.df, self.col, self.tokenizer)
         dataloader = DataLoader(dataset, batch_size=self.BATCH_SIZE, collate_fn=custom_collate)
 
         return dataloader
     
-    def get_training_XY(self, df, test_size = 0.25):
+    def get_training_XY(self, test_size = 0.25):
         self.model.to(self.device)
-        dataloader = self._create_dataloader(self, df)
+        dataloader = self._create_dataloader(self)
         self.model.eval()
         X = []
         Y = []
@@ -77,13 +77,13 @@ class BaseProcessor:
     
     
 class BertProcessor(BaseProcessor):
-    def __init__(self, df, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs):
+    def __init__(self, df, col, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs):
         model_string = 'bert-base-uncased'
-        super().__init__(df, model_string, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs)
+        super().__init__(df, col, model_string, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs)
         
 
 class XLNetProcessor(BaseProcessor):
-    def __init__(self, df, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs):
+    def __init__(self, df, col, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs):
         model_string = 'xlnet-base-cased'
-        super().__init__(df, model_string, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs)
+        super().__init__(df, col, model_string, MODEL_MAX_LENGTH, DEVICE, BATCH_SIZE, random_state, **kwargs)
     
