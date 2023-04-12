@@ -73,7 +73,7 @@ class BaseProcessor:
         if not test_size:
             return X,Y
         else:
-            return train_test_split(X,Y, test_size, random_state = self.random_state)
+            return train_test_split(X,Y, test_size=test_size, random_state = self.random_state)
     
     
 class BertProcessor(BaseProcessor):
