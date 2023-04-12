@@ -16,10 +16,11 @@ def custom_collate(data):
 
 
 class TF_Dataset(Dataset):
-    def __init__(self, df, tokenizer, **kwargs):
+    def __init__(self, df, col, tokenizer, **kwargs):
         super().__init__()
         self.tokenizer = tokenizer
-        self.X = list(df['clean_tweets'])
+        self.col = col
+        self.X = list(df[self.col])
         self.Y = list(df['sentiment_id'])
         
     def __len__(self):
