@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import torch
-from tensorflow import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer, AutoModel
 from sklearn.model_selection import train_test_split
 from tqdm.notebook import tqdm
 tqdm.pandas()
