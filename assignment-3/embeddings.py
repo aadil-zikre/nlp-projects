@@ -28,7 +28,7 @@ class TF_Dataset(Dataset):
         self.col = col
         self.X = list(df[self.col])
         self.is_test = kwargs.get('is_test', False)
-        if self.is_test:
+        if not self.is_test:
             self.Y = list(df['sentiment_id']) 
         
     def __len__(self):
