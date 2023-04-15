@@ -61,7 +61,7 @@ class BaseProcessor:
     
     def _create_dataloader(self):
         
-        dataset = self.tf_dataset(self.df, self.col, self.tokenizer, self.is_test)
+        dataset = self.tf_dataset(self.df, self.col, self.tokenizer, is_test = self.is_test)
         if self.is_test:
             dataloader = DataLoader(dataset, batch_size=self.BATCH_SIZE, collate_fn=custom_collate_test)
         else:
