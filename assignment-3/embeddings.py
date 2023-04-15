@@ -96,9 +96,9 @@ class BaseProcessor:
         self.model.eval()
         X = []
         for batch in tqdm(dataloader):
-            batch = tuple(b.to(self.device) for b in batch)
+            batch = batch.to(self.device)
             with torch.no_grad():
-                out = self.model(**batch[0])['last_hidden_state'].cpu().numpy()
+                out = self.model(**batch)['last_hidden_state'].cpu().numpy()
             X.append(out)
         X = np.concatenate(X)
         return X
