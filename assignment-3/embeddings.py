@@ -14,6 +14,12 @@ def custom_collate(data):
     Y = torch.tensor([i[1] for i in data])
     return tokenizer(X, padding='max_length', truncation='longest_first', return_tensors='pt', return_attention_mask=True, return_token_type_ids=True), Y
 
+def custom_collate_test(data): 
+    tokenizer = data[0][1]
+    X = [i[0] for i in data]
+    # Y = torch.tensor([i[1] for i in data])
+    return tokenizer(X, padding='max_length', truncation='longest_first', return_tensors='pt', return_attention_mask=True, return_token_type_ids=True)
+
 
 class TF_Dataset(Dataset):
     def __init__(self, df, col, tokenizer, **kwargs):
@@ -21,13 +27,17 @@ class TF_Dataset(Dataset):
         self.tokenizer = tokenizer
         self.col = col
         self.X = list(df[self.col])
-        self.Y = list(df['sentiment_id'])
+        self.is_test = kwargs.get('is_test', False)
+        if self.is_test:
+            self.Y = list(df['sentiment_id']) 
         
     def __len__(self):
-        return len(self.Y)
+        return len(self.X)
 
     def __getitem__(self, idx):
         # x_encoded = self.tokenizer(self.X[idx], padding='longest', truncation='longest_first', return_tensors='pt', return_attention_mask=True, return_token_type_ids=True)
+        if self.is_test:
+            return self.X[idx], self.tokenizer
         return self.X[idx], self.Y[idx], self.tokenizer
     
 
@@ -46,11 +56,16 @@ class BaseProcessor:
         self.model = AutoModel.from_pretrained(self.model_string)
         self.BATCH_SIZE = BATCH_SIZE
         self.random_state = random_state
+        self.is_test = kwargs.get('is_test', False)
+
     
     def _create_dataloader(self):
         
-        dataset = self.tf_dataset(self.df, self.col, self.tokenizer)
-        dataloader = DataLoader(dataset, batch_size=self.BATCH_SIZE, collate_fn=custom_collate)
+        dataset = self.tf_dataset(self.df, self.col, self.tokenizer, self.is_test)
+        if self.is_test:
+            dataloader = DataLoader(dataset, batch_size=self.BATCH_SIZE, collate_fn=custom_collate_test)
+        else:
+            dataloader = DataLoader(dataset, batch_size=self.BATCH_SIZE, collate_fn=custom_collate)
 
         return dataloader
     
@@ -74,6 +89,19 @@ class BaseProcessor:
             return X,Y
         else:
             return train_test_split(X,Y, test_size=test_size, random_state = self.random_state)
+        
+    def get_training_X(self):
+        self.model.to(self.device)
+        dataloader = self._create_dataloader()
+        self.model.eval()
+        X = []
+        for batch in tqdm(dataloader):
+            batch = tuple(b.to(self.device) for b in batch)
+            with torch.no_grad():
+                out = self.model(**batch[0])['last_hidden_state'].cpu().numpy()
+            X.append(out)
+        X = np.concatenate(X)
+        return X
     
     
 class BertProcessor(BaseProcessor):
